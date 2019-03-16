@@ -11,7 +11,6 @@ from basicpayment.accounts.seriallizers import AccountSerializer, TransactionSer
 
 class AccountsViewSet(viewsets.ModelViewSet):
 
-    queryset = Account.objects.all()
     serializer_class = AccountSerializer
 
     def get_queryset(self):
@@ -42,6 +41,9 @@ class TransactionsViewSet(
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
     permission_classes = (permissions.IsAuthenticated,)
+
+    def get_queryset(self):
+        return Transaction.objects.filter(account__owner=self.request.user)
 
     def get_permissions(self):
         action_permissions_mapping = {

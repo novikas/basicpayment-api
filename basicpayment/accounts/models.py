@@ -83,7 +83,7 @@ class Transaction(models.Model):
     @transaction.atomic
     def create_debt(cls, account, amount):
         debt_transaction = Transaction(account=account, amount=amount, type=cls.TYPE_DEBT).save()
-        account.balance = account.balance + amount
+        account.balance = float(account.balance) + amount
         account.save()
 
         return debt_transaction
@@ -98,7 +98,7 @@ class Transaction(models.Model):
             fee_amount = amount * settings.SERVICE_FEE
             Transaction(account=account, amount=fee_amount, type=cls.TYPE_CREDIT).save()
 
-        account.balance = account.balance + amount + fee_amount
+        account.balance = float(account.balance) + amount + fee_amount
 
         account.save()
 

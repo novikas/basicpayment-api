@@ -28,15 +28,28 @@ class TransactionCreateSerializer(serializers.Serializer):
 
     def validate(self, data):
         if data['from_account'] == data['to_account']:
-            raise serializers.ValidationError('from_account and to_account should be different')
+            raise serializers.ValidationError({'to_account': 'to_account shouldnt be equal to from_account'})
 
-        sender_account = Account.objects.get(pk=data['from_account'])
-        receiver_account = Account.objects.get(pk=data['to_account'])
+        try:
+            sender_account = Account.objects.get(pk=data['from_account'])
+        except Account.DoesNotExist:
+            raise serializers.ValidationError(
+                {'from_account': 'Account with id {} doesn\'t exist'.format(data['from_account'])}
+            )
 
-        if not sender_account:
-            raise serializers.ValidationError('Account with id {} doesn\'t exist'.format(data['from_account']))
-        if not receiver_account:
-            raise serializers.ValidationError('Account with id {} doesn\'t exist'.format('to_account'))
+        user = self.context['request'].user
+
+        if user.id != sender_account.owner_id:
+            raise serializers.ValidationError(
+                {'from_account': 'You only allowed to transfer funds from accounts owned by you'}
+            )
+
+        try:
+            receiver_account = Account.objects.get(pk=data['to_account'])
+        except Account.DoesNotExist:
+            raise serializers.ValidationError(
+                {'to_account': 'Account with id {} doesn\'t exist'.format(data['to_account'])}
+            )
 
         is_internal_transfer = sender_account.owner.id == receiver_account.owner.id
         amount = data['amount'] if is_internal_transfer else data['amount'] * (1 + settings.SERVICE_FEE)
@@ -47,7 +60,7 @@ class TransactionCreateSerializer(serializers.Serializer):
                       + ('' if is_internal_transfer else 'Please consider that amount with service fee is {}'
                          .format(amount))
 
-            raise serializers.ValidationError(message)
+            raise serializers.ValidationError({'amount': message})
 
         return data
 
