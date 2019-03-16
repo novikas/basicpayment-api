@@ -2,7 +2,7 @@ from rest_framework import viewsets, mixins, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.state import User
 
-from basicpayment.auth.serializers import SignUpSerializer, UserDetailSerializer
+from basicpayment.authentication.serializers import SignUpSerializer, UserDetailSerializer
 
 
 class SignUpViewSet(

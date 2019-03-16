@@ -1,9 +1,12 @@
-from rest_framework import viewsets, permissions
+from django.db import transaction
+from rest_framework import viewsets, permissions, status, mixins
 
 # Create your views here.
+from rest_framework.response import Response
+
 from basicpayment.accounts.models import Account, Transaction
 from basicpayment.accounts.permissions import IsAccountOwner
-from basicpayment.accounts.seriallizers import AccountSerializer
+from basicpayment.accounts.seriallizers import AccountSerializer, TransactionSerializer, TransactionCreateSerializer
 
 
 class AccountsViewSet(viewsets.ModelViewSet):
@@ -29,16 +32,22 @@ class AccountsViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
 
-class TransactionsViewSet(viewsets.ModelViewSet):
+class TransactionsViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
 
     queryset = Transaction.objects.all()
-    serializer_class = Trans
+    serializer_class = TransactionSerializer
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_permissions(self):
         action_permissions_mapping = {
             'create': (permissions.IsAuthenticated,),
             'list': (permissions.IsAuthenticated,),
-            'retrieve': (permissions.IsAuthenticated, IsAccountOwner),
+            'retrieve': (permissions.IsAuthenticated,),
         }
 
         default = (permissions.AllowAny,)
@@ -47,4 +56,26 @@ class TransactionsViewSet(viewsets.ModelViewSet):
         self.permission_classes = permissions_
 
         return super().get_permissions()
+
+    def get_serializer_class(self):
+        default_serializer = TransactionSerializer
+
+        action_serializer_mapping = {
+            'create': TransactionCreateSerializer,
+            'list': TransactionSerializer,
+            'retrieve': TransactionSerializer,
+        }
+
+        return action_serializer_mapping.get(self.action, default_serializer)
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(status=status.HTTP_201_CREATED, headers=headers)
 

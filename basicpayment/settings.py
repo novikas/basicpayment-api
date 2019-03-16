@@ -25,9 +25,22 @@ SECRET_KEY = 'cas*vr(z2stj)b@-!e9h0of(@35(*3dbskj#v@amx4g+far2tf'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.164.1.64', '95.27.76.10', '127.0.0.1']
 
 
+SERVICE_FEE = 0.05
+
+CURRENCIES = {
+    "USD": {
+        "usd_exchange_rate": 1
+    },
+    "EUR": {
+        "usd_exchange_rate": 1.13
+    },
+    "CNY": {
+        "usd_exchange_rate": 0.15
+    }
+}
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,6 +53,7 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'basicpayment.accounts',
+    'basicpayment.authentication',
 ]
 
 MIDDLEWARE = [

@@ -1,20 +1,17 @@
-from enum import Enum
-
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
+from django.conf import settings
+
+from basicpayment.common.currency import Currency
+
+currencies = settings.CURRENCIES
 
 
 class Account(models.Model):
 
-    CURRENCY_USD = 'USD'
-    CURRENCY_CNY = 'CNY'
-    CURRENCY_EUR = 'EUR'
-
     currency_choices = [
-        (CURRENCY_USD, CURRENCY_USD),
-        (CURRENCY_CNY, CURRENCY_CNY),
-        (CURRENCY_EUR, CURRENCY_EUR),
+        (name, name) for name, val in currencies.items()
     ]
 
     balance = models.DecimalField(
@@ -39,8 +36,30 @@ class Account(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def has_available(self, amount):
+        balance_currency = Currency(self.balance, self.currency)
+        amount_currency = Currency(amount, self.currency)
+        return balance_currency >= amount_currency
+
+    @property
+    def is_banker(self):
+        return self.owner.username == settings.BANKER_CREDENTIALS['username']
+
+    @property
+    def balance_multicurrency(self):
+        return Currency(self.balance, self.currency)
+
 
 class Transaction(models.Model):
+
+    TYPE_DEBT = 0
+    TYPE_CREDIT = 1
+
+    transaction_types = [
+        (TYPE_DEBT, 'DEBT'),
+        (TYPE_CREDIT, 'CREDIT'),
+    ]
+
     amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -49,31 +68,13 @@ class Transaction(models.Model):
         verbose_name=_('transaction amount')
     )
 
-    source_account = models.ForeignKey(
+    account = models.ForeignKey(
         Account,
         on_delete=models.PROTECT,
-        related_name='outcoming_transactions',
-        verbose_name=_('source account')
+        related_name='transactions',
+        verbose_name=_('account')
     )
 
-    source_currency = models.CharField(
-        max_length=5,
-        choices=Account.currency_choices,
-        verbose_name=_('source currency')
-    )
-
-    destination_account = models.ForeignKey(
-        Account,
-        on_delete=models.PROTECT,
-        related_name='incoming_transactions',
-        verbose_name=_('destination account')
-    )
-
-    destination_currency = models.CharField(
-        max_length=5,
-        choices=Account.currency_choices,
-        verbose_name=_('source currency')
-    )
+    type = models.CharField(max_length=10, choices=transaction_types, null=False, default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
-

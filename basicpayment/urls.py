@@ -21,6 +21,7 @@ router = routers.DefaultRouter()
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^auth/', include(('basicpayment.auth.urls', 'auth'), namespace='auth')),
+    # path('api-authentication/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^auth/', include(('basicpayment.authentication.urls', 'authentication'), namespace='authentication')),
+    url(r'^accounts/', include(('basicpayment.accounts.urls', 'accounts'), namespace='accounts')),
 ]
