@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -78,3 +78,28 @@ class Transaction(models.Model):
     type = models.CharField(max_length=10, choices=transaction_types, null=False, default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @classmethod
+    @transaction.atomic
+    def create_debt(cls, account, amount):
+        debt_transaction = Transaction(account=account, amount=amount, type=cls.TYPE_DEBT).save()
+        account.balance = account.balance + amount
+        account.save()
+
+        return debt_transaction
+
+    @classmethod
+    @transaction.atomic
+    def create_credit(cls, account, amount, with_fee):
+        credit_transaction = Transaction(account=account, amount=amount, type=cls.TYPE_CREDIT).save()
+        fee_amount = 0
+
+        if with_fee:
+            fee_amount = amount * settings.SERVICE_FEE
+            Transaction(account=account, amount=fee_amount, type=cls.TYPE_CREDIT).save()
+
+        account.balance = account.balance + amount + fee_amount
+
+        account.save()
+
+        return credit_transaction

@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import viewsets, mixins, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.state import User
@@ -12,6 +13,7 @@ class SignUpViewSet(
 
     serializer_class = SignUpSerializer
 
+    @transaction.atomic
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
 

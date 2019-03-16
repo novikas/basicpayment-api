@@ -22,6 +22,7 @@ class TransactionCreateSerializer(serializers.Serializer):
     to_account = serializers.IntegerField()
     # amount = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0.01)
     amount = serializers.FloatField(min_value=0.01)
+
     class Meta:
         fields = ('from_account', 'to_account', 'amount')
 
@@ -52,37 +53,13 @@ class TransactionCreateSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         sender_account = Account.objects.get(pk=validated_data['from_account'])
-        receiver_account = Account.objects.get(pk=validated_data['to_account'])
         amount_currency = Currency(validated_data['amount'], sender_account.currency)
+
+        receiver_account = Account.objects.get(pk=validated_data['to_account'])
         is_internal_transfer = sender_account.owner.id == receiver_account.owner.id
-        credit_transaction = Transaction(
-            account_id=validated_data['from_account'],
-            amount=amount_currency[sender_account.currency],
-            type=Transaction.TYPE_CREDIT
-        )
 
-        debt_transaction = Transaction(
-            account_id=validated_data['to_account'],
-            amount=amount_currency[receiver_account.currency],
-            type=Transaction.TYPE_DEBT
-        )
-        transactions_create = [credit_transaction, debt_transaction]
-        if not is_internal_transfer:
-            fee_transaction = Transaction(
-                account_id=validated_data['from_account'],
-                amount=amount_currency[sender_account.currency] * settings.SERVICE_FEE,
-                type=Transaction.TYPE_CREDIT
-            )
-
-            transactions_create.append(fee_transaction)
-
-        sender_account.balance = float(sender_account.balance) - (amount_currency[sender_account.currency] * (1 if is_internal_transfer else (1 + settings.SERVICE_FEE)))
-        receiver_account.balance = float(receiver_account.balance) + amount_currency[receiver_account.currency]
-
-        Transaction.objects.bulk_create(transactions_create)
-        sender_account.save()
-        print(qwer)
-        receiver_account.save()
+        Transaction.create_credit(sender_account, amount_currency[sender_account.currency], not is_internal_transfer)
+        Transaction.create_debt(receiver_account, amount_currency[receiver_account.currency])
 
         return validated_data
 

@@ -3,7 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.conf import settings
 
-from basicpayment.accounts.models import Account
+from basicpayment.accounts.models import Account, Transaction
 from basicpayment.accounts.seriallizers import AccountSerializer
 
 
@@ -19,7 +19,12 @@ class SignUpSerializer(serializers.Serializer):
         accounts = [
             Account(currency=currency_name, owner=user) for currency_name, currency_data in settings.CURRENCIES.items()
         ]
-        Account.objects.bulk_create(accounts)
+
+        for acc in accounts:
+            acc.save()
+
+        usd_account = next(acc for acc in accounts if acc.currency == 'USD')
+        Transaction.create_debt(usd_account, 100)
 
         return user
 
