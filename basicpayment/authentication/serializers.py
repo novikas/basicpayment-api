@@ -14,7 +14,7 @@ class SignUpSerializer(serializers.Serializer):
     def create(self, validated_data):
 
         if User.objects.filter(username=validated_data['username']).exists():
-            raise serializers.ValidationError({'username': 'Such username already exist'})
+            raise serializers.ValidationError({'username': ['Such username already exist']})
 
         user = User.objects.create_user(
             username=validated_data['username'],
