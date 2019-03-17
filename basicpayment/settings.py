@@ -27,7 +27,7 @@ SECRET_KEY = 'cas*vr(z2stj)b@-!e9h0of(@35(*3dbskj#v@amx4g+far2tf'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.164.1.64', '95.27.76.10', '127.0.0.1']
+ALLOWED_HOSTS = ['192.164.1.64', '95.27.76.10', '127.0.0.1', 'api']
 
 
 SERVICE_FEE = 0.05
