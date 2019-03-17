@@ -15,7 +15,7 @@ class AccountsViewSet(viewsets.ModelViewSet):
     serializer_class = AccountSerializer
 
     def get_queryset(self):
-        return Account.objects.filter(owner=self.request.user)
+        return Account.objects.filter(owner=self.request.user).order_by('-created_at')
 
     def get_permissions(self):
         action_permissions_mapping = {

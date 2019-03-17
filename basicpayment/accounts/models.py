@@ -79,6 +79,10 @@ class Transaction(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def type_name(self):
+        return 'Credit' if self.type == '1' else 'Debt'
+
     @classmethod
     @transaction.atomic
     def create_debt(cls, account, amount):
