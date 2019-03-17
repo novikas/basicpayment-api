@@ -1,5 +1,6 @@
+import django_filters
 from django.db import transaction
-from rest_framework import viewsets, permissions, status, mixins
+from rest_framework import viewsets, permissions, status, mixins, filters
 
 # Create your views here.
 from rest_framework.response import Response
@@ -41,6 +42,9 @@ class TransactionsViewSet(
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, filters.OrderingFilter)
+    ordering_fields = ('amount', 'created_at')
+    filter_fields = ('type', 'amount')
 
     def get_queryset(self):
         return Transaction.objects.filter(account__owner=self.request.user)

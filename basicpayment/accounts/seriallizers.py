@@ -14,7 +14,7 @@ class AccountSerializer(serializers.ModelSerializer):
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
-        fields = ('account', 'amount',)
+        fields = ('account', 'amount', 'created_at', 'type',)
 
 
 class TransactionCreateSerializer(serializers.Serializer):

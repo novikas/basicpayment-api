@@ -14,7 +14,7 @@ class Currency:
             raise ValueError('{} is not supported. Failed to convert'.format(currency))
         currency_info = self.currencies[currency]
 
-        self.amount = amount * currency_info['usd_exchange_rate']
+        self.amount = float(amount) * currency_info['usd_exchange_rate']
 
     def __add__(self, other):
         return Currency(self.amount + other.amount)

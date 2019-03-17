@@ -12,6 +12,10 @@ class SignUpSerializer(serializers.Serializer):
     password = serializers.CharField(min_length=8)
 
     def create(self, validated_data):
+
+        if User.objects.filter(username=validated_data['username']).exists():
+            raise serializers.ValidationError({'username': 'Such username already exist'})
+
         user = User.objects.create_user(
             username=validated_data['username'],
             password=validated_data['password']

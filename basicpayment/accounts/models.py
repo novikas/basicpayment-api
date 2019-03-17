@@ -98,7 +98,7 @@ class Transaction(models.Model):
             fee_amount = amount * settings.SERVICE_FEE
             Transaction(account=account, amount=fee_amount, type=cls.TYPE_CREDIT).save()
 
-        account.balance = float(account.balance) + amount + fee_amount
+        account.balance = float(account.balance) - (amount + fee_amount)
 
         account.save()
 

@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from datetime import timedelta
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -89,14 +91,23 @@ WSGI_APPLICATION = 'basicpayment.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
+CONNECTION_CONFIG = {
+    'dev': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    },
+    'in_docker': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'HOST': 'db',
+        'NAME': os.environ.get('POSTGRES_DB', None),
+        'USER': 'postgres',  # os.environ.get('POSTGRES_USER', None),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', None),
     }
 }
 
+DATABASES = {
+    'default': CONNECTION_CONFIG.get(os.environ.get('RUNNING_ENV', 'dev'), {})
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -120,18 +131,17 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
 }
 
 SIMPLE_JWT = {
-    # 'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
-    # 'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
-    # 'BLACKLIST_AFTER_ROTATION': True,
 
     'ALGORITHM': 'HS256',
-    'SIGNING_KEY': 'qwerty',  # TODO get from environment
-    # 'VERIFYING_KEY': None,
+    'SIGNING_KEY': os.environ.get('SIGNING_KEY', 'qwerty'),
 
     'AUTH_HEADER_TYPES': ('Bearer',),
     'USER_ID_FIELD': 'id',
@@ -139,10 +149,6 @@ SIMPLE_JWT = {
 
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
-
-    # 'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
-    # 'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
-    # 'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
 
