@@ -1,12 +1,14 @@
+from decimal import Decimal
+
 from django.conf import settings
 
 
 class Currency:
-    amount = 0
+    amount = Decimal(0)
 
     currencies = settings.CURRENCIES
 
-    def __init__(self, amount=0, currency='USD'):
+    def __init__(self, amount=Decimal(0), currency='USD'):
         self.set_amount(amount, currency)
 
     def set_amount(self, amount, currency):
@@ -14,7 +16,7 @@ class Currency:
             raise ValueError('{} is not supported. Failed to convert'.format(currency))
         currency_info = self.currencies[currency]
 
-        self.amount = float(amount) * currency_info['usd_exchange_rate']
+        self.amount = Decimal(amount) * currency_info['usd_exchange_rate']
 
     def __add__(self, other):
         return Currency(self.amount + other.amount)

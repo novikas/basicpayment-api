@@ -1,3 +1,4 @@
+from decimal import Decimal
 
 from rest_framework import serializers
 from django.contrib.auth.models import User
@@ -28,7 +29,7 @@ class SignUpSerializer(serializers.Serializer):
             acc.save()
 
         usd_account = next(acc for acc in accounts if acc.currency == 'USD')
-        Transaction.create_debt(usd_account, 100)
+        Transaction.create_debt(usd_account, Decimal(100))
 
         return user
 

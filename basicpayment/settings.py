@@ -14,6 +14,7 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from datetime import timedelta
+from decimal import Decimal
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -22,25 +23,25 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'cas*vr(z2stj)b@-!e9h0of(@35(*3dbskj#v@amx4g+far2tf'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'cas*vr(z2stj)b@-!e9h0of(@35(*3dbskj#v@amx4g+far2tf'),
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.164.1.64', '95.27.76.10', '127.0.0.1', 'api']
+ALLOWED_HOSTS = ['127.0.0.1', 'api']
 
 
-SERVICE_FEE = 0.05
+SERVICE_FEE = Decimal('0.05')
 
 CURRENCIES = {
     "USD": {
-        "usd_exchange_rate": 1
+        "usd_exchange_rate": Decimal('1')
     },
     "EUR": {
-        "usd_exchange_rate": 1.13
+        "usd_exchange_rate": Decimal('1.13')
     },
     "CNY": {
-        "usd_exchange_rate": 0.15
+        "usd_exchange_rate": Decimal('0.15')
     }
 }
 # Application definition

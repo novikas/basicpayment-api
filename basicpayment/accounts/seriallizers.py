@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from rest_framework import serializers
 from django.conf import settings
 
@@ -20,8 +22,8 @@ class TransactionSerializer(serializers.ModelSerializer):
 class TransactionCreateSerializer(serializers.Serializer):
     from_account = serializers.IntegerField()
     to_account = serializers.IntegerField()
-    # amount = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0.01)
-    amount = serializers.FloatField(min_value=0.01)
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0.01)
+    # amount = serializers.FloatField(min_value=1)
 
     class Meta:
         fields = ('from_account', 'to_account', 'amount')
@@ -52,7 +54,7 @@ class TransactionCreateSerializer(serializers.Serializer):
             )
 
         is_internal_transfer = sender_account.owner.id == receiver_account.owner.id
-        amount = data['amount'] if is_internal_transfer else data['amount'] * (1 + settings.SERVICE_FEE)
+        amount = data['amount'] if is_internal_transfer else data['amount'] * (Decimal(1) + settings.SERVICE_FEE)
         is_enough = sender_account.has_available(amount)
 
         if not is_enough:
